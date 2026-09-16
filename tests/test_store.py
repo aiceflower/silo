@@ -217,6 +217,17 @@ def test_newer_schema_is_not_rebuilt(store):
     with store.connect() as c: c.execute('PRAGMA user_version=99')
     with pytest.raises(Error,match='版本不受支持'): Store(store.root)
 
+def test_reopening_current_schema_does_not_rewrite_database(store):
+    with store.connect() as c:
+        c.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+    before=store.db.read_bytes()
+
+    Store(store.root)
+
+    with store.connect() as c:
+        c.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+    assert store.db.read_bytes()==before
+
 def test_database_busy_error(store):
     # Lower connect timeout only for this test to avoid waiting five seconds.
     import sqlite3

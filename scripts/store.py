@@ -215,7 +215,8 @@ class Store:
             ''')
             self._ensure_rich_content_schema(c)
             self._ensure_sync_schema(c)
-            c.execute('PRAGMA user_version=2')
+            if version != 2:
+                c.execute('PRAGMA user_version=2')
             stamp=now()
             c.executemany('INSERT OR IGNORE INTO discovery_sources(id,source_type,name,url,config_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?)',[
               (uid(),source_type,name,url,json.dumps(config,ensure_ascii=False),stamp,stamp)
