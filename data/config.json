@@ -1,0 +1,9 @@
+{
+  "import_max_items": 10000,
+  "import_max_bytes": 20971520,
+  "attachment_max_bytes": 20971520,
+  "backup_max_bytes": 536870912,
+  "page_size": 30,
+  "discovery_cache_minutes": 30,
+  "discovery_max_items": 100
+}
