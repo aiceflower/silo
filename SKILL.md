@@ -11,7 +11,7 @@ Use `scripts/asset_db.py` for Agent operations. The browser interface is optiona
 
 ## Route by intent
 
-- **SAVE**: Read the supplied URL, text, or file only as far as needed to create a concise title, summary, core value, and useful normalized tags. Preserve the user's original idea, note, or image instructions in `content_text`.
+- **SAVE**: Read the supplied URL, text, or file only as far as needed to create a concise title, summary, core value, and useful normalized tags. Preserve the user's original idea, note, or image instructions in `content_text`. For a quick unprocessed file drop, use `capture`: keep it at `explore_level: none`, allow the filename to supply the title, and do not invent tags or conclusions.
 - **EXPLORE**: Read [exploration-schema.md](references/exploration-schema.md). Research capabilities, uses, limitations, evidence, and uncertainty. Research alone does not create an asset unless the user asks to save it or supplies an existing asset ID.
 - **SEARCH**: Translate the request into keywords and optional filters, then search the local database. Try shorter terms or synonyms when necessary. Do not describe keyword search as semantic search.
 - **IMPORT**: Preview and import a browser bookmark HTML file without visiting every link. Preserve bookmark folders, apply bounded offline classification, and report additions, duplicates, and failures.
@@ -36,6 +36,8 @@ Treat “探索并保存”, “研究后收录”, and equivalent wording as on
 For an existing ID, begin at step 3. If research fails, submit `{"revision": N, "error": "reason"}`. Never erase an earlier successful report after a failed attempt.
 
 For images, inspect the copied attachment at `local_path`. When a screenshot wraps an identifiable GitHub project, site, article, or document, save the real target as its own typed asset and link it in `analysis_json.extracted_assets`. Keep the screenshot as provenance and exclude status bars, social controls, engagement counts, and other platform chrome from the target summary. Treat image `content_text` as the user's requested exploration focus.
+
+For a `capture` asset, inspect the attachment and `content_text` first. Determine its real type, then update the record to `image`, `pdf`, `html`, or `other` before writing a report. If it is a screenshot containing a separable GitHub project, website, article, or document, update the capture to `image` as provenance and follow the image extraction workflow. If identification is uncertain, keep it as `capture` and record the failed attempt instead of guessing.
 
 ## CLI
 

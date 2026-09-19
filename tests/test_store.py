@@ -159,6 +159,15 @@ def test_note_is_first_class_and_searchable(store):
     assert a['asset_type']=='note' and a['explore_level']=='basic'
     assert store.search('图片探索',asset_type='note')['items'][0]['id']==a['id']
 
+def test_capture_uses_filename_as_title_and_stays_unprocessed(store,tmp_path):
+    image=tmp_path/'稍后识别的截图.png'; image.write_bytes(b'\x89PNG\r\n\x1a\nraw')
+    asset=store.save({'asset_type':'capture','file_path':str(image),'metadata_json':{'filename':image.name}},source='user')['asset']
+    assert asset['title']=='稍后识别的截图'
+    assert asset['asset_type']=='capture' and asset['explore_level']=='none'
+    assert asset['tags']==[] and asset['local_path'].startswith('storage/captures/')
+    classified=store.update(asset['id'],{'revision':asset['revision'],'asset_type':'image'})
+    assert classified['asset_type']=='image'
+
 def test_attachment_size_limit(store,tmp_path):
     store.config['attachment_max_bytes']=4
     file=tmp_path/'large.bin';file.write_bytes(b'12345')

@@ -19,7 +19,7 @@ from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit, unquote
 from classification import classify
 
-TYPES = {'github','website','article','image','idea','note','html','pdf','bookmark','other'}
+TYPES = {'github','website','article','image','capture','idea','note','html','pdf','bookmark','other'}
 FACETS = {'domain','capability','scenario','technology'}
 LEVELS = {'none','basic','deep'}
 DEFAULT_ROOT = Path(__file__).resolve().parent.parent
@@ -689,9 +689,13 @@ class Store:
         require(isinstance(data,dict),'输入必须为对象'); require(source in ('ai','user','import'),'无效来源')
         allowed={'title','asset_type','source_url','file_path','summary','core_value','content_text','content_html','user_note','metadata_json','tags','explore_level'}
         require(not set(data)-allowed,'未知或只读字段: '+','.join(set(data)-allowed))
-        title=data.get('title'); require(isinstance(title,str) and title.strip(),'标题不能为空')
         url=canonical(data.get('source_url')); typ=data.get('asset_type',infer(url) if url else 'idea'); require(typ in TYPES,'无效资产类型')
-        level=data.get('explore_level','basic'); require(level in ('none','basic'),'SAVE 不可设置 deep')
+        title=data.get('title')
+        if typ=='capture' and (not isinstance(title,str) or not title.strip()) and data.get('file_path'):
+            original=data.get('metadata_json',{}).get('filename') if isinstance(data.get('metadata_json',{}),dict) else None
+            title=Path(original or data['file_path']).stem or '待处理素材'
+        require(isinstance(title,str) and title.strip(),'标题不能为空')
+        level=data.get('explore_level','none' if typ=='capture' else 'basic'); require(level in ('none','basic'),'SAVE 不可设置 deep')
         for k in ('summary','core_value','content_text','content_html','user_note'): require(isinstance(data.get(k,''),str),k+' 必须为文字')
         require(isinstance(data.get('metadata_json',{}),dict),'metadata_json 必须是对象')
         folders=data.get('metadata_json',{}).get('bookmark_folders',[])
@@ -703,7 +707,7 @@ class Store:
             if file.stat().st_size>self.config['attachment_max_bytes']: raise Error('file',f"附件不可超过 {self.config['attachment_max_bytes']//1024//1024} MiB")
             digest=hashlib.sha256(file.read_bytes()).hexdigest()
             suffix=file.suffix.lower() if re.fullmatch(r'\.[a-zA-Z0-9]{1,8}',file.suffix) else '.bin'
-            folder='images' if typ=='image' else 'html' if typ=='html' else 'documents'
+            folder='images' if typ=='image' else 'captures' if typ=='capture' else 'html' if typ=='html' else 'documents'
             path=f'storage/{folder}/{digest}{suffix}'
             data=dict(data)
             data['metadata_json']=dict(data.get('metadata_json',{}))
@@ -764,7 +768,7 @@ class Store:
                     if k=='title': require(data[k].strip(),'标题不能为空')
                     if k=='status': require(data[k] in ('active','archived'),'状态无效')
                     if k=='explore_level': require(data[k] in ('none','basic','deep'),'探索级别无效')
-                    if k=='asset_type': require(data[k] in ('github','website','article','image','idea','note','html','pdf','bookmark','other'),'资产类型无效')
+                    if k=='asset_type': require(data[k] in TYPES,'资产类型无效')
                     c.execute(f'UPDATE assets SET {k}=? WHERE id=?',(data[k],id))
             for k in ('source_url','canonical_url'):
                 if k in data:

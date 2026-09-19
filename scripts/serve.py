@@ -238,7 +238,7 @@ class Handler(BaseHTTPRequestHandler):
                 if asset["asset_type"] == "html":
                     safe = sanitize_html(file_path.read_text(encoding="utf-8", errors="replace")).encode()
                     return self.send_bytes(safe, content_type="text/html; charset=utf-8", headers={"Content-Security-Policy": PREVIEW_CSP})
-                if asset["asset_type"] == "image":
+                if asset["asset_type"] in {"image", "capture"}:
                     raw = file_path.read_bytes()
                     media = "image/png" if raw.startswith(b"\x89PNG\r\n\x1a\n") else "image/jpeg" if raw.startswith(b"\xff\xd8\xff") else "image/gif" if raw.startswith((b"GIF87a", b"GIF89a")) else "image/webp" if raw.startswith(b"RIFF") and raw[8:12] == b"WEBP" else None
                     if media:
@@ -313,7 +313,7 @@ class Handler(BaseHTTPRequestHandler):
             if not upload or not upload["content"]:
                 raise Error("file", "附件不能为空")
             asset_type = fields.get("asset_type", "")
-            if asset_type not in {"image", "pdf", "html", "other"}:
+            if asset_type not in {"image", "capture", "pdf", "html", "other"}:
                 raise Error("validation", "该类型不支持附件上传")
             suffix = Path(upload["filename"]).suffix
             if not re.fullmatch(r"\.[A-Za-z0-9]{1,8}", suffix):
@@ -324,7 +324,11 @@ class Handler(BaseHTTPRequestHandler):
                     temp.write(upload["content"])
                     temp_name = temp.name
                 tags = json.loads(fields.get("tags_json", "[]"))
-                data = {"title": fields.get("title", ""), "asset_type": asset_type, "file_path": temp_name, "summary": fields.get("summary") or fields.get("description", "")[:180], "core_value": fields.get("core_value", ""), "content_text": fields.get("description", ""), "tags": tags, "explore_level": "none" if asset_type == "image" else "basic", "metadata_json": {"filename": upload["filename"] or fields.get("title", "附件")}}
+                filename = Path(upload["filename"] or "附件").name
+                title = fields.get("title", "").strip()
+                if asset_type == "capture" and not title:
+                    title = Path(filename).stem or "待处理素材"
+                data = {"title": title, "asset_type": asset_type, "file_path": temp_name, "summary": fields.get("summary") or fields.get("description", "")[:180], "core_value": fields.get("core_value", ""), "content_text": fields.get("description", ""), "tags": tags, "explore_level": "none" if asset_type in {"image", "capture"} else "basic", "metadata_json": {"filename": filename}}
                 if fields.get("source_url", "").strip():
                     data["source_url"] = fields["source_url"].strip()
                 return self.send_json(self.store.save(data, "user"))
