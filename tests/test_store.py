@@ -168,6 +168,12 @@ def test_capture_uses_filename_as_title_and_stays_unprocessed(store,tmp_path):
     classified=store.update(asset['id'],{'revision':asset['revision'],'asset_type':'image'})
     assert classified['asset_type']=='image'
 
+    text=store.save({'asset_type':'capture','content_text':'一个尚未整理的长文本标题\n后续正文','tags':[{'name':'稍后阅读','facet':'scenario'}]},source='user')['asset']
+    assert text['title']=='一个尚未整理的长文本标题' and text['local_path'] is None
+    assert text['explore_level']=='none' and text['tags'][0]['source']=='user'
+    with pytest.raises(Error,match='需要文件或文本'):
+        store.save({'asset_type':'capture'},source='user')
+
 def test_attachment_size_limit(store,tmp_path):
     store.config['attachment_max_bytes']=4
     file=tmp_path/'large.bin';file.write_bytes(b'12345')

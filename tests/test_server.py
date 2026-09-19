@@ -158,6 +158,14 @@ def test_upload_and_bookmark_preview(local_server):
     assert captured["asset"]["asset_type"] == "capture" and captured["asset"]["tags"] == []
     assert request(local_server, f"/api/assets/{captured['asset']['id']}/preview")[1]["Content-Type"] == "image/png"
 
+    status, _, body = request(local_server, "/api/assets", "POST", {
+        "title": "", "asset_type": "capture", "content_text": "先收下这段文本\n以后再整理",
+        "explore_level": "none", "tags": [{"name": "待探索", "facet": "scenario"}]
+    })
+    text_capture = json.loads(body)["asset"]
+    assert status == 200 and text_capture["title"] == "先收下这段文本"
+    assert text_capture["asset_type"] == "capture" and text_capture["tags"][0]["name"] == "待探索"
+
     bookmark = b'<DL><DT><A HREF="https://github.com/example/project">Example</A></DL>'
     body, boundary = multipart_payload([("file", bookmark, "bookmarks.html", "text/html")])
     status, preview = raw_request(local_server, "/api/imports/bookmarks/preview", body, f"multipart/form-data; boundary={boundary}")

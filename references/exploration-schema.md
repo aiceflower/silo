@@ -31,7 +31,7 @@ Websites additionally describe login_required (true/false/null) and usage_cost (
 
 For images, inspect the saved attachment when image understanding is available. Keep the common envelope and add `visual_summary`, `extracted_text`, `key_elements`, `possible_uses`, and `follow_up_questions`. Distinguish visible text from interpretation. Never infer obscured or unreadable details. If image understanding is unavailable, preserve the asset at `none` and record the failed attempt instead of fabricating a report.
 
-For an unprocessed `capture`, inspect the attachment and user instructions before producing a report. Classify it by updating the same record to `image`, `pdf`, `html`, or `other`, then use that type's exploration rules. A screenshot that wraps another identifiable resource becomes an `image` provenance record and follows the extraction workflow below. Do not store a successful deep report with `asset_type: capture`; when the material cannot be identified reliably, retain the capture at `none` and record the failed attempt.
+For an unprocessed `capture`, inspect its text, attachment, user instructions, and user-selected tags before producing a report. Classify it by updating the same record to its real type, then use that type's exploration rules. A screenshot that wraps another identifiable resource becomes an `image` provenance record and follows the extraction workflow below. Do not store a successful deep report with `asset_type: capture`; when the material cannot be identified reliably, retain the capture at `none` and record the failed attempt.
 
 ### Images that wrap another resource
 

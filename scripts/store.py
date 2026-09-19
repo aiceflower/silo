@@ -691,9 +691,15 @@ class Store:
         require(not set(data)-allowed,'未知或只读字段: '+','.join(set(data)-allowed))
         url=canonical(data.get('source_url')); typ=data.get('asset_type',infer(url) if url else 'idea'); require(typ in TYPES,'无效资产类型')
         title=data.get('title')
-        if typ=='capture' and (not isinstance(title,str) or not title.strip()) and data.get('file_path'):
-            original=data.get('metadata_json',{}).get('filename') if isinstance(data.get('metadata_json',{}),dict) else None
-            title=Path(original or data['file_path']).stem or '待处理素材'
+        if typ=='capture':
+            raw_text=data.get('content_text','')
+            require(bool(data.get('file_path')) or isinstance(raw_text,str) and bool(raw_text.strip()),'待处理素材需要文件或文本')
+            if not isinstance(title,str) or not title.strip():
+                if data.get('file_path'):
+                    original=data.get('metadata_json',{}).get('filename') if isinstance(data.get('metadata_json',{}),dict) else None
+                    title=Path(original or data['file_path']).stem or '待处理素材'
+                else:
+                    title=re.sub(r'\s+',' ',raw_text.strip().splitlines()[0]).strip()[:80] or '待处理文本'
         require(isinstance(title,str) and title.strip(),'标题不能为空')
         level=data.get('explore_level','none' if typ=='capture' else 'basic'); require(level in ('none','basic'),'SAVE 不可设置 deep')
         for k in ('summary','core_value','content_text','content_html','user_note'): require(isinstance(data.get(k,''),str),k+' 必须为文字')
