@@ -11,7 +11,7 @@ Use `scripts/asset_db.py` for Agent operations. The browser interface is optiona
 
 ## Route by intent
 
-- **SAVE**: Read the supplied URL, text, or file only as far as needed to create a concise title, summary, core value, and useful normalized tags. Preserve the user's original idea, note, or image instructions in `content_text`. For a quick unprocessed text or file drop, use `capture`: keep it at `explore_level: none`, allow the text's first line or filename to supply the title, and do not invent tags or conclusions. User-selected quick tags are human tags and must be preserved.
+- **SAVE**: Read the supplied URL, text, or file only as far as needed to create a concise title, summary, core value, and useful normalized tags. Preserve the user's original idea, note, or image instructions in `content_text`. For a quick unprocessed text or file drop, use `capture`: keep it at `explore_level: none`, allow the text's first line or filename to supply the title, and do not invent tags or conclusions. User-selected quick tags and manually entered tags are human tags and must be preserved.
 - **EXPLORE**: Read [exploration-schema.md](references/exploration-schema.md). Research capabilities, uses, limitations, evidence, and uncertainty. Research alone does not create an asset unless the user asks to save it or supplies an existing asset ID.
 - **SEARCH**: Translate the request into keywords and optional filters, then search the local database. Try shorter terms or synonyms when necessary. Do not describe keyword search as semantic search.
 - **IMPORT**: Preview and import a browser bookmark HTML file without visiting every link. Preserve bookmark folders, apply bounded offline classification, and report additions, duplicates, and failures.
